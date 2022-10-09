@@ -67,7 +67,7 @@ These commands are for general member use, however, some arguments are locked be
 13. Copy the generated link and Go to the URL in your browser - Invite Bot to your Discord server
 
 
-#### Windows Installation and Run
+#### Configure and Run
 1. Download this repo and extract to a location
 2. Open command and navigate inside of bot's directory
 3. Open the `.env.sample` file in a text editor and paste in your copied token, save, and rename the `.env-sample` to `.env`
