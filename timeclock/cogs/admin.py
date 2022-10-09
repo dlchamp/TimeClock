@@ -1,5 +1,4 @@
 import json
-from code import interact
 from typing import List, Optional
 
 import disnake

@@ -1,8 +1,5 @@
-from typing import Union
-
 import disnake
 
-from timeclock import db_model as model
 from timeclock import query
 
 __all__ = (
