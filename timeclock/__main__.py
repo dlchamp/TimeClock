@@ -72,7 +72,6 @@ async def check_database():
         os.makedirs(file_path)
     if not os.path.exists(file_path + "data.sqlite3"):
         logger.info("Database not found.  Initializing a new database")
-        _file = open(file_path + "data.sqlite3", "w+").close()
         await model.create_db()
         logger.info("Database initialized")
         return
