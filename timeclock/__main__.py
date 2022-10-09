@@ -67,10 +67,12 @@ async def main() -> None:
 async def check_database():
     """Creates the database file and tables if the file does not exist"""
     logger.info("Checking for database file at `timeclock/database/data.sqlite3`")
-    file_path = "timeclock/database/data.sqlite3"
-    if not os.path.isfile(file_path):
+    file_path = "timeclock/database/"
+    if not os.path.exists(file_path):
+        os.makedirs(file_path)
+    if not os.path.exists(file_path + "data.sqlite3"):
         logger.info("Database not found.  Initializing a new database")
-        _file = open(file_path, "w+").close()
+        _file = open(file_path + "data.sqlite3", "w+").close()
         await model.create_db()
         logger.info("Database initialized")
         return
