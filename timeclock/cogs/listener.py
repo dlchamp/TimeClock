@@ -51,9 +51,7 @@ class Listeners(commands.Cog):
 
         # member just clocked in
         if db_member.on_duty:
-            embed.description = (
-                f"You clocked in at {disnake.utils.format_dt(timestamp, 't')}"
-            )
+            embed.description = f"You clocked in at {disnake.utils.format_dt(timestamp, 't')}"
 
         # member clocked out
         else:

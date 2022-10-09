@@ -81,17 +81,13 @@ class TimeClock(commands.Cog):
                     )
 
                 # format the timesheet and get totals
-                timesheet, total = utils.format_timesheet(
-                    interaction.guild, all_members
-                )
+                timesheet, total = utils.format_timesheet(interaction.guild, all_members)
 
                 embed = utils.create_total_timesheet_embed(
                     interaction.guild, timesheet, total, history
                 )
 
-                return await interaction.response.send_message(
-                    embed=embed, ephemeral=True
-                )
+                return await interaction.response.send_message(embed=embed, ephemeral=True)
 
         member = member or interaction.author
 

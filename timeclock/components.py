@@ -10,9 +10,7 @@ __all__ = (
 
 def default_embed() -> disnake.Embed:
     """Create a default Embed for when the guild doesn't have one setup yet"""
-    embed = disnake.Embed(
-        title="Example Embed Title", description="Example embed description"
-    )
+    embed = disnake.Embed(title="Example Embed Title", description="Example embed description")
     return embed
 
 
@@ -95,9 +93,7 @@ class EditEmbedButtons(disnake.ui.View):
             except disnake.NotFound:
                 pass
             else:
-                return await query.update_guild_config(
-                    interaction.guild.id, embed=embed
-                )
+                return await query.update_guild_config(interaction.guild.id, embed=embed)
 
         message = await interaction.channel.send(
             embed=embed,

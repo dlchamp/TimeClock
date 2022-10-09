@@ -150,9 +150,7 @@ async def fetch_all_member_times(
             if members != []:
                 for member in members:
                     time = [
-                        time
-                        for time in member.times
-                        if time.punch_in >= start_date_timestamp
+                        time for time in member.times if time.punch_in >= start_date_timestamp
                     ]
                     member.times = time
 

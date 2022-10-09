@@ -43,8 +43,7 @@ def calculate_total(times: list[model.Time]) -> str:
 
         diffs.append(
             (
-                datetime.fromtimestamp(time.punch_out)
-                - datetime.fromtimestamp(time.punch_in)
+                datetime.fromtimestamp(time.punch_out) - datetime.fromtimestamp(time.punch_in)
             ).seconds
         )
 
@@ -77,8 +76,7 @@ def create_total_timesheet_embed(
     """
     embed = disnake.Embed(
         title="Member Time Totals",
-        description=f"Total On Duty time for the last {history} days\n{total}"
-        or "\u200b",
+        description=f"Total On Duty time for the last {history} days\n{total}" or "\u200b",
     )
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
     embed.add_field(name="\u200b", value=f"{timesheet}")
@@ -143,9 +141,7 @@ def default_embed():
     return embed
 
 
-def format_timesheet(
-    guild: disnake.Guild, members: List[model.Member]
-) -> Tuple[str, str]:
+def format_timesheet(guild: disnake.Guild, members: List[model.Member]) -> Tuple[str, str]:
     """Creates the formatted timesheet for the embed and the calculated total clock on time"""
 
     timesheet = []

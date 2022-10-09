@@ -113,9 +113,7 @@ class Time(Base):
 
 
 # engine = create_async_engine("sqlite+aiosqlite:///database/data.sqlite3", echo=False)
-engine = create_async_engine(
-    "sqlite+aiosqlite:///timeclock/database/data.sqlite3", echo=False
-)
+engine = create_async_engine("sqlite+aiosqlite:///timeclock/database/data.sqlite3", echo=False)
 async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
