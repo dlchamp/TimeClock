@@ -41,8 +41,8 @@ These commands are for general member use, however, some arguments are locked be
 ### Dependencies
 
 * Built on [Python3 - 3.10+](https://www.python.org/downloads/)
-* get started quickly with `poetry install` from within the project root
-* get poetry with `pip install poetry` and all of the following dependencies will be installed
+* `pip install poetry`
+* get started quickly with `poetry install` from within the project root. The following libraries will be installed.
 * Disnake 2.6
 * aiosqlite 0.17.0
 * loguru 0.6.0
