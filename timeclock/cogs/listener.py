@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Union
 
 import disnake
 from disnake.ext import commands
@@ -13,6 +14,25 @@ class Listeners(commands.Cog):
 
     def __init__(self, bot: TimeClockBot) -> None:
         self.bot = bot
+
+    @commands.Cog.listener("on_button_click")
+    async def handle_trash_button(self, inter: disnake.MessageInteraction) -> None:
+        """Delete a message if the user has permission to do so"""
+
+        if not "trash" in inter.component.custom_id:
+            return
+
+        if (
+            not str(inter.author.id) in inter.component.custom_id
+            and not inter.channel.permissions_for(inter.author).manage_messages
+        ):
+            await inter.response.send_message(
+                "You are not the person that requested this message.", ephemeral=True
+            )
+            return
+
+        await inter.response.defer()
+        await inter.delete_original_response()
 
     @commands.Cog.listener("on_button_click")
     async def punch_in_out_click(self, interaction: disnake.MessageInteraction) -> None:
@@ -31,9 +51,7 @@ class Listeners(commands.Cog):
             )
 
         timestamp = datetime.timestamp(disnake.utils.utcnow())
-        db_member = await query.add_member_punch_event(
-            interaction.guild.id, member.id, timestamp
-        )
+        db_member = await query.add_member_punch_event(interaction.guild.id, member.id, timestamp)
 
         embed = self.create_punch_embed(member, db_member, timestamp)
 
@@ -42,7 +60,6 @@ class Listeners(commands.Cog):
     def create_punch_embed(
         self, member: disnake.Member, db_member: model.Member, timestamp: float
     ) -> disnake.Embed:
-
         embed = disnake.Embed()
         embed.set_author(
             name=member.display_name,
@@ -73,6 +90,29 @@ class Listeners(commands.Cog):
             return True
 
         return False
+
+    @commands.Cog.listener("on_raw_message_delete")
+    @commands.Cog.listener("on_raw_bulk_message_delete")
+    async def handle_message_delete(
+        self, payload: Union[disnake.RawBulkMessageDeleteEvent, disnake.RawMessageDeleteEvent]
+    ) -> None:
+        """Handles deleting any configured embeds from the database it is deleted"""
+
+        if isinstance(payload, disnake.RawBulkMessageDeleteEvent):
+            message_ids = payload.message_ids
+
+        else:
+            message_ids = [payload.message_id]
+
+        guild = await query.fetch_guild_config(payload.guild_id)
+
+        if not guild:
+            return
+
+        for message_id in message_ids:
+            if message_id == guild.message_id:
+                await query.remove_config_message(guild.id, message_id)
+                break
 
 
 def setup(bot: TimeClockBot) -> None:
