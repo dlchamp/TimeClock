@@ -31,7 +31,7 @@ async def main() -> None:
 
     await check_database()
 
-    bot: TimeClockBot = TimeClockBot(intents=_intents, reload=True, sync_commands_debug=False)
+    bot: TimeClockBot = TimeClockBot(intents=_intents)
 
     try:
         bot.load_extensions()
@@ -42,7 +42,6 @@ async def main() -> None:
     logger.info("Bot is starting...")
 
     if os.name != "nt":
-
         loop = asyncio.get_event_loop()
 
         future = asyncio.ensure_future(bot.start(Config.token or ""), loop=loop)
@@ -52,7 +51,6 @@ async def main() -> None:
         try:
             await future
         except asyncio.CancelledError:
-
             logger.warning("Kill command was sent to the bot. Closing bot and event loop")
             if not bot.is_closed():
                 await bot.close()
