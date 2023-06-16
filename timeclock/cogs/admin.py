@@ -16,7 +16,7 @@ class Admin(commands.Cog):
     def __init__(self, bot: TimeClockBot) -> None:
         self.bot = bot
 
-    async def cog_slash_command_check(self, inter: disnake.AppCmdInter) -> bool:
+    async def cog_slash_command_check(self, inter: disnake.GuildCommandInteraction) -> bool:
         """Performs a check for every command within this cog.  If returns True,
         command is invoked, else command.CheckFailed is raise"""
         roles = await query.fetch_guild_roles(inter.guild.id, is_mod=True)
@@ -27,7 +27,7 @@ class Admin(commands.Cog):
         )
 
     async def cog_slash_command_error(
-        self, inter: disnake.AppCmdInter, error: Exception
+        self, inter: disnake.GuildCommandInteraction, error: Exception
     ) -> None:
         """Called if any exception is raised for any command within this cog"""
 
@@ -41,14 +41,14 @@ class Admin(commands.Cog):
 
     @commands.slash_command(name="config")
     @commands.default_member_permissions(administrator=True)
-    async def config(self, interaction: disnake.AppCmdInter):
+    async def config(self, inter: disnake.GuildCommandInteraction):
         pass
 
     @config.sub_command(name="edit_embed")
     @commands.guild_only()
     async def config_edit_embed(
         self,
-        interaction: disnake.AppCmdInter,
+        inter: disnake.GuildCommandInteraction,
         image: Optional[disnake.Attachment] = None,
         thumbnail: Optional[disnake.Attachment] = None,
         clear_images: Optional[bool] = False,
@@ -65,28 +65,26 @@ class Admin(commands.Cog):
         """
 
         # make sure I can send messages within this channel
-        if not interaction.channel.permissions_for(interaction.guild.me).send_messages:
-            return await interaction.response.send_message(
+        if not inter.channel.permissions_for(inter.guild.me).send_messages:
+            return await inter.response.send_message(
                 f"Please fix my permissions so that I can send messages in this channel",
                 ephemeral=True,
             )
 
-        db_guild: model.Guild = await query.fetch_guild_config(interaction.guild.id)
+        db_guild: model.Guild = await query.fetch_guild_config(inter.guild.id)
         if db_guild is None:
             embed = utils.default_embed()
             message = None
         else:
             embed = disnake.Embed.from_dict(json.loads(db_guild.embed))
-            channel = interaction.guild.get_channel(db_guild.channel_id)
+            channel = inter.guild.get_channel(db_guild.channel_id)
             message = channel.get_partial_message(db_guild.message_id)
 
         embed.set_image(url=image.proxy_url if image and not clear_images else None)
-        embed.set_thumbnail(
-            url=thumbnail.proxy_url if thumbnail and not clear_images else None
-        )
+        embed.set_thumbnail(url=thumbnail.proxy_url if thumbnail and not clear_images else None)
 
-        view = components.EditEmbedButtons(message)
-        await interaction.response.send_message(
+        view = components.EditEmbedButtons(message, embed, inter)
+        await inter.response.send_message(
             "Here is your currently configured embed. Use the buttons to below to edit, save, or cancel these changes\n"
             "If you wish to add an image or thumbnail, please [Cancel] and attach them with the optional command arguments.\n\n"
             "If this is the first time running this command, or the previous message was deleted, make sure you're using this command within the channel where you wish to post the 'Punch' embed.",
@@ -98,7 +96,7 @@ class Admin(commands.Cog):
     @config.sub_command(name="add_role")
     async def config_add_mod_role(
         self,
-        interaction: disnake.AppCmdInter,
+        inter: disnake.GuildCommandInteraction,
         role: disnake.Role,
         is_mod: Optional[bool] = False,
         can_punch: Optional[bool] = True,
@@ -115,15 +113,15 @@ class Admin(commands.Cog):
         can_punch: :type:`bool`
             If you wish to add a mod role that cannot punch, set this to False
         """
-        await query.add_role(interaction.guild.id, role.id, is_mod, can_punch)
-        await interaction.response.send_message(
-            f"{role.mention} has been configured in **{interaction.guild.name}** with the following permissions:\n"
+        await query.add_role(inter.guild.id, role.id, is_mod, can_punch)
+        await inter.response.send_message(
+            f"{role.mention} has been configured in **{inter.guild.name}** with the following permissions:\n"
             f"Mod: **{is_mod}**\nCan Punch: **{can_punch}**",
             ephemeral=True,
         )
 
     @config.sub_command("remove_role")
-    async def config_remove_role(self, interaction: disnake.AppCmdInter, role: str):
+    async def config_remove_role(self, inter: disnake.GuildCommandInteraction, role: str):
         """
         Remove a role from the config. This role will be removed from the database
 
@@ -133,27 +131,27 @@ class Admin(commands.Cog):
             The name of the role you wish to remove
         """
         if role == "No roles have been configured":
-            return await interaction.response.send_message(
+            return await inter.response.send_message(
                 "No roles have been configured for this guild", ephemeral=True
             )
 
-        role = disnake.utils.get(interaction.guild.roles, name=role.split(" (")[0])
+        role = disnake.utils.get(inter.guild.roles, name=role.split(" (")[0])
 
         if role is None:
-            return await interaction.response.send_message(
-                f"{role.split(' (')[0]} does not exist within **{interaction.guild.name}**"
+            return await inter.response.send_message(
+                f"{role.split(' (')[0]} does not exist within **{inter.guild.name}**"
             )
 
         await query.remove_role(role.id)
 
-        await interaction.response.send_message(
-            f"{role.mention} was removed from **{interaction.guild.name}'s configuration.",
+        await inter.response.send_message(
+            f"{role.mention} was removed from **{inter.guild.name}'s configuration.",
             ephemeral=True,
         )
 
     @config_remove_role.autocomplete("role")
     async def remove_role_autocomplete(
-        self, interaction: disnake.AppCmdInter, string: str
+        self, inter: disnake.GuildCommandInteraction, string: str
     ) -> List[str]:
         """
         Provides options to the user for selecting a role to remove from the database
@@ -163,12 +161,12 @@ class Admin(commands.Cog):
         string: :type:`str`
             The argument string as provided from discord via user input
         """
-        roles = await query.fetch_guild_roles(interaction.guild.id)
+        roles = await query.fetch_guild_roles(inter.guild.id)
         if roles is None or roles == []:
             return ["No roles have been configured"]
 
         roles = [
-            f"{interaction.guild.get_role(role.id).name} (Mod: {role.is_mod} | Can Punch: {role.can_punch}"
+            f"{inter.guild.get_role(role.id).name} (Mod: {role.is_mod} | Can Punch: {role.can_punch}"
             for role in roles
         ]
 
