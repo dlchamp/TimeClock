@@ -116,7 +116,7 @@ def create_timesheet_embed(
 
     embed = disnake.Embed(
         title=f"Timesheet for {member.display_name}",
-        description=f"Total On Duty time for {history} days\n{total}",
+        description=f"Total On Duty time for last {history} days\n{total}",
     )
     embed.add_field(name="\u200b", value=times)
     embed.add_field(name="\u200b", value="\u200b")
