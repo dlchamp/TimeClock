@@ -23,14 +23,12 @@ class TimeClock(commands.Cog):
 
         mod_roles = await query.fetch_guild_roles(interaction.guild.id, is_mod=True)
 
-        if mod_roles is None or mod_roles == []:
-            return True
+        if not mod_roles:
+            return False
 
         mod_role_ids = [role.id for role in mod_roles]
-        if any(role.id in mod_role_ids for role in member.roles):
-            return True
 
-        return False
+        return any(role.id in mod_role_ids for role in member.roles)
 
     @commands.slash_command(name="timesheet")
     async def timesheet(
