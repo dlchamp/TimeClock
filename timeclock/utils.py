@@ -42,9 +42,7 @@ def calculate_total(times: list[model.Time]) -> str:
             continue
 
         diffs.append(
-            (
-                datetime.fromtimestamp(time.punch_out) - datetime.fromtimestamp(time.punch_in)
-            ).seconds
+            (datetime.fromtimestamp(time.punch_out) - datetime.fromtimestamp(time.punch_in)).seconds
         )
 
     total_seconds = sum(diffs)
@@ -148,7 +146,6 @@ def format_timesheet(guild: disnake.Guild, members: List[model.Member]) -> Tuple
     all_times = []
 
     for member in members:
-        print(member.id)
         if member.on_duty:
             _member = f"🟢 {guild.get_member(int(member.id)).display_name}"
         else:
