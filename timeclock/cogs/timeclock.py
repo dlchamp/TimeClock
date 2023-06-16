@@ -13,7 +13,7 @@ class TimeClock(commands.Cog):
     def __init__(self, bot: TimeClockBot) -> None:
         self.bot = bot
 
-    async def check_member_permissions(self, interaction: disnake.AppCmdInter) -> bool:
+    async def check_member_permissions(self, interaction: disnake.GuildCommandInteraction) -> bool:
         """Checks if the member contains any of the mod_roles or has the administrator permissions
         for the guild"""
 
@@ -35,8 +35,8 @@ class TimeClock(commands.Cog):
     @commands.slash_command(name="timesheet")
     async def timesheet(
         self,
-        interaction: disnake.AppCmdInter,
-        history: Optional[int] = 7,
+        interaction: disnake.GuildCommandInteraction,
+        history: Optional[int] = commands.Param(ge=1, le=31, default=7),
         all_members: Optional[bool] = False,
         member: Optional[disnake.Member] = None,
     ) -> None:
@@ -49,7 +49,7 @@ class TimeClock(commands.Cog):
         all_members: :type:`Optional[bool]]`
             (Mod only) Set to True to get all members (Cannot be used with member)
         member: :type:`Optional[disnake.Member]`
-            Specify a member to view their timesheet (Cannot be used with options)
+            Specify a member to view their timesheet (Cannot be used with all_members)
 
         """
 
