@@ -20,6 +20,7 @@ __all__ = (
     "fetch_guild_roles",
     "add_role",
     "remove_role",
+    "remove_config_message",
 )
 
 
@@ -33,10 +34,7 @@ async def add_guild(guild_id: int) -> None:
     """
     async with async_session() as session:
         async with session.begin():
-
-            result = await session.execute(
-                select(model.Guild).where(model.Guild.id == guild_id)
-            )
+            result = await session.execute(select(model.Guild).where(model.Guild.id == guild_id))
             guild: model.Guild = result.scalars().first()
 
             if guild:
@@ -69,10 +67,7 @@ async def update_guild_config(
 
     async with async_session() as session:
         async with session.begin():
-
-            result = await session.execute(
-                select(model.Guild).where(model.Guild.id == guild_id)
-            )
+            result = await session.execute(select(model.Guild).where(model.Guild.id == guild_id))
             guild: model.Guild = result.scalars().first()
 
             if guild is None:
@@ -86,7 +81,6 @@ async def update_guild_config(
                 )
 
             else:
-
                 if message_id:
                     guild.message_id = message_id
                 if channel_id:
@@ -108,10 +102,7 @@ async def fetch_guild_config(guild_id: int) -> model.Guild:
     """
     async with async_session() as session:
         async with session.begin():
-
-            result = await session.execute(
-                select(model.Guild).where(model.Guild.id == guild_id)
-            )
+            result = await session.execute(select(model.Guild).where(model.Guild.id == guild_id))
             return result.scalars().first()
 
 
@@ -139,7 +130,6 @@ async def fetch_all_member_times(
 
     async with async_session() as session:
         async with session.begin():
-
             result = await session.execute(
                 select(model.Member)
                 .where(model.Member.guild_id == guild_id)
@@ -149,9 +139,7 @@ async def fetch_all_member_times(
 
             if members != []:
                 for member in members:
-                    time = [
-                        time for time in member.times if time.punch_in >= start_date_timestamp
-                    ]
+                    time = [time for time in member.times if time.punch_in >= start_date_timestamp]
                     member.times = time
 
                 return members
@@ -180,7 +168,6 @@ async def fetch_member_times(
 
     async with async_session() as session:
         async with session.begin():
-
             result = await session.execute(
                 select(model.Member)
                 .where(model.Member.guild_id == guild_id)
@@ -192,16 +179,12 @@ async def fetch_member_times(
             if member is None:
                 return
 
-            member.times = [
-                time for time in member.times if time.punch_in >= start_date_timestamp
-            ]
+            member.times = [time for time in member.times if time.punch_in >= start_date_timestamp]
             member.times.sort(key=lambda t: t.punch_in, reverse=False)
             return member
 
 
-async def add_member_punch_event(
-    guild_id: int, member_id: int, timestamp: float
-) -> model.Member:
+async def add_member_punch_event(guild_id: int, member_id: int, timestamp: float) -> model.Member:
     """Add a new punch event for the member.  Will punch out if in, or in if out,
     returns the updated member object
 
@@ -217,7 +200,6 @@ async def add_member_punch_event(
 
     async with async_session() as session:
         async with session.begin():
-
             result = await session.execute(
                 select(model.Member)
                 .where(model.Member.id == member_id)
@@ -269,7 +251,6 @@ async def fetch_guild_roles(
     """
     async with async_session() as session:
         async with session.begin():
-
             result = await session.execute(
                 select(model.Role).where(model.Role.guild_id == guild_id)
             )
@@ -307,7 +288,6 @@ async def add_role(
 
     async with async_session() as session:
         async with session.begin():
-
             result = await session.execute(
                 select(model.Role)
                 .where(model.Role.guild_id == guild_id)
@@ -342,7 +322,23 @@ async def remove_role(role_id: int) -> None:
     """
     async with async_session() as session:
         async with session.begin():
-
             await session.execute(delete(model.Role).where(model.Role.id == role_id))
 
             await session.commit()
+
+
+async def remove_config_message(guild_id: int, message_id: int) -> None:
+    """Removes the punch configured message from the database"""
+
+    async with async_session() as session:
+        result = await session.execute(select(model.Guild).where(model.Guild.guild_id == guild_id))
+        guild = result.scalar_one_or_none()
+
+        if not guild:
+            return
+
+        guild.channel_id = None
+        guild.embed = None
+        guild.message_id = None
+
+        await session.commit()
