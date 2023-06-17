@@ -55,10 +55,11 @@ These commands are for general member use, however, some arguments are locked be
 7. Keep the default settings for Public Bot - *checked* and Require OAuth2 Code Grant - *unchecked*
 8. Add bot image if it did not pull the image from the Application
 9. Copy Token and store it somewhere or go ahead and paste it into `.env.sample`
-10. Go to OAuth2 tab
-11. Under *Scopes* - Check Bot and applications.commands (needed for slash commands)
-12. Under *Bot Permissions* - check Send messages, View Channels
-13. Copy the generated link and Go to the URL in your browser - Invite Bot to your Discord server
+10. Make sure to enable Member intents in the Privileged section.
+11. Go to OAuth2 tab
+12. Under *Scopes* - Check Bot and applications.commands (needed for slash commands)
+13. Under *Bot Permissions* - check Send messages, View Channels
+14. Copy the generated link and Go to the URL in your browser - Invite Bot to your Discord server
 
 
 #### Configure and Run
