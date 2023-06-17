@@ -26,9 +26,10 @@ def format_timedelta(_in: float, _out: float) -> str:
         Clock out timestamp
     """
     if _out is None:
-        return "-"
+        diff = datetime.now() - datetime.fromtimestamp(_in)
+    else:
+        diff = datetime.fromtimestamp(_out) - datetime.fromtimestamp(_in)
 
-    diff = datetime.fromtimestamp(_out) - datetime.fromtimestamp(_in)
     hours, remainder = divmod(diff.seconds, 3600)
     minutes, remainder = divmod(remainder, 60)
 
@@ -41,9 +42,15 @@ def calculate_total(times: list[model.Time]) -> str:
         if time.punch_in is None:
             continue
 
-        diffs.append(
-            (datetime.fromtimestamp(time.punch_out) - datetime.fromtimestamp(time.punch_in)).seconds
-        )
+        if time.punch_out is not None:
+            diffs.append(
+                (
+                    datetime.fromtimestamp(time.punch_out) - datetime.fromtimestamp(time.punch_in)
+                ).seconds
+            )
+
+        else:
+            diffs.append((datetime.now() - datetime.fromtimestamp(time.punch_in)).seconds)
 
     total_seconds = sum(diffs)
 
@@ -104,7 +111,7 @@ def create_timesheet_embed(
     for time in db_member.times:
         if time.punch_out is None:
             member_times.append(
-                f"In: {disnake.utils.format_dt(time.punch_in,'t')} | Out: N/A | Total: {format_timedelta(time.punch_in, time.punch_out)}"
+                f"In: {disnake.utils.format_dt(time.punch_in,'t')} | Out: - | Total: {format_timedelta(time.punch_in, time.punch_out)}"
             )
         else:
             member_times.append(
