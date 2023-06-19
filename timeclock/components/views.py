@@ -1,3 +1,5 @@
+from typing import Union
+
 import disnake
 
 from timeclock import log
@@ -10,7 +12,9 @@ logger = log.get_logger(__name__)
 
 
 class Pagination(disnake.ui.View):
-    def __init__(self, embeds: list[disnake.Embed], author: disnake.Member | disnake.User) -> None:
+    def __init__(
+        self, embeds: list[disnake.Embed], author: Union[disnake.Member, disnake.User]
+    ) -> None:
         super().__init__(timeout=None)
         self.author = author
         self.embeds = embeds
