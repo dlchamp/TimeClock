@@ -24,9 +24,13 @@ class Listeners(commands.Cog):
         if not "trash" in inter.component.custom_id:
             return
 
+        roles = await self.bot.guild_cache.get_roles(inter.guild.id, is_mod=True)
+        mod_role_ids = [role.id for role in roles]
+
         if (
             not str(inter.author.id) in inter.component.custom_id
             and not inter.channel.permissions_for(inter.author).manage_messages
+            and not any(role.id in mod_role_ids for role in inter.author.roles)
         ):
             await inter.response.send_message(
                 "You are not the person that requested this message.", ephemeral=True
