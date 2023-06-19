@@ -11,8 +11,10 @@ python = "^3.10"
 SQLAlchemy = "^2.0.16"
 disnake = "^2.8.1"
 python-dotenv = "^1.0.0"
-loguru = "^0.7.0"
 aiosqlite = "^0.19.0"
+coloredlogs = "^15.0.1"
+thefuzz = "^0.19.0"
+python-levenshtein = "^0.21.1"
 
 
 [build-system]
