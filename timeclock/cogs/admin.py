@@ -5,8 +5,10 @@ import disnake
 from disnake.ext import commands
 from thefuzz import process
 
-from timeclock import components, constants
+from timeclock import components, constants, log
 from timeclock.bot import TimeClockBot
+
+logger = log.get_logger(__name__)
 
 
 class Admin(commands.Cog):
@@ -75,6 +77,9 @@ class Admin(commands.Cog):
 
         # make sure I can send messages within this channel
         if not self.check_channel_permissions(inter):
+            logger.warning(
+                f"Bot missing channel permissions in {inter.channel.name} ({inter.guild.name})"
+            )
             return await inter.response.send_message(
                 "Please make sure you have enabled the following permissions in this channel before using this command.\n"
                 "`Send Messages`, `View Channel`, `Read Channel History`",

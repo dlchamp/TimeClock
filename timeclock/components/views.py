@@ -1,9 +1,12 @@
 import disnake
 
+from timeclock import log
 from timeclock.bot import TimeClockBot
 
 from .buttons import TrashButton
 from .modal import EditEmbed
+
+logger = log.get_logger(__name__)
 
 
 class Pagination(disnake.ui.View):
@@ -141,7 +144,7 @@ class EditEmbedButtons(disnake.ui.View):
             view=self.clear_items(),
         )
         await self.inter.delete_original_response()
-
+        logger.warning(f"{inter.author} edited the timeclock embed in {inter.guild.name}")
         self.stop()
 
     @disnake.ui.button(label="Cancel", style=disnake.ButtonStyle.danger)
