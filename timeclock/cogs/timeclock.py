@@ -150,7 +150,7 @@ class TimeClock(commands.Cog):
                 embeds = self.create_all_member_timesheet_embed(inter.guild, all_members, history)
                 if len(embeds) == 1:
                     await inter.followup.send(
-                        embed=embeds[0], components=components.TrashButton(inter.author)
+                        embed=embeds[0], components=components.TrashButton(inter.author.id)
                     )
                     return
 
@@ -170,7 +170,7 @@ class TimeClock(commands.Cog):
             )
 
         embed = tc_member.create_timesheet_embed(member.name, history=history)
-        await inter.followup.send(embed=embed, components=components.TrashButton(inter.author))
+        await inter.followup.send(embed=embed, components=components.TrashButton(inter.author.id))
 
 
 def setup(bot: TimeClockBot) -> None:
