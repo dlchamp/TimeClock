@@ -12,19 +12,21 @@ Members can view their time sheets with up to 31 days of history.  Mods can view
 ### Admin only commands
 These commands are only useable by guild administrators or members that have a configured moderator role.
 &nbsp;
-- `/config edit_embed` - Create or update the embed message that the [Punch In/Out] button is attached.  On submission, you will be presented with an example embed. Edit the title and body by clicking the attached [Edit] button. [Save] when you are finished, or [Cancel] to cancel
+- `/config edit-embed` - Create or update the embed message that the [Punch In/Out] button is attached.  On submission, you will be presented with an example embed. Edit the title and body by clicking the attached [Edit] button. [Save] when you are finished, or [Cancel] to cancel
 
     - `[image]` - Attach an image that will appear as a larger image at the bottom of the embed
     - `[thumbnail]` - Attach an image that will appear as a smaller image at the top-right of the embed
     - `[clear_images]` - Clear all images from the embed.  (If this is selected, any attached images will not be used)
 
-- `/config add_role` - Add a new role to the guild's configuration stored within the database. With this command you can add moderator roles or specify roles that will be allowed to create punch events.  If no roles are configured, only Guild administrators will be able to moderate time sheets and use these admin commands and all members will be allowed to Punch In/Out
+- `/config add-role` - Add a new role to the guild's configuration stored within the database. With this command you can add moderator roles or specify roles that will be allowed to create punch events.  If no roles are configured, only Guild administrators will be able to moderate time sheets and use these admin commands and all members will be allowed to Punch In/Out
     - `(role)` - The role that will be added to the guild's configured roles
     - `[is_mod]` - Set to True if you wish for this role to be a moderator role (*Default is False*)
     - `[can_punch]` - Set to True if you wish for this role to be able to create punch events (*Default is True*)
 
-- `/config remove_role` - Remove a role from the guild's configuration.  Any members that have been assigned this role will lost their abilities to moderate time sheets or create punch events, unless they have another role that has been configured
+- `/config remove-role` - Remove a role from the guild's configuration.  Any members that have been assigned this role will lost their abilities to moderate time sheets or create punch events, unless they have another role that has been configured
     - `(role)` - The role that will be removed from the guild's configured roles.
+
+- `/config view-roles` - Displays all configured roles and their mod/can punch permissions that have been set
 
 
 ### General Commands
@@ -32,8 +34,8 @@ These commands are for general member use, however, some arguments are locked be
 
 - `/timesheet` - View your own time sheet, up to 31 days of history can be displayed
     - `[history]` - The amount of historical days to display (*Default is 7, Max is 31*)
-    - `[all_members]` - A moderator only argument that will display all member time sheet totals
-    - `[member]` - A moderator only argument that will display the target member's time sheet
+    - `[all_members]` - A moderator or server admin only argument that will display all member time sheet totals
+    - `[member]` - A moderator or server admin only argument that will display the target member's time sheet
 
 
 ## Self Hosting

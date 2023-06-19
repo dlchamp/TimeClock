@@ -4,9 +4,11 @@ from typing import Union
 import disnake
 from disnake.ext import commands
 
-from timeclock import db_model as model
-from timeclock import query
+from timeclock import log
 from timeclock.bot import TimeClockBot
+from timeclock.database import Guild, Member
+
+logger = log.get_logger(__name__)
 
 
 class Listeners(commands.Cog):
@@ -22,9 +24,13 @@ class Listeners(commands.Cog):
         if not "trash" in inter.component.custom_id:
             return
 
+        roles = await self.bot.guild_cache.get_roles(inter.guild.id, is_mod=True)
+        mod_role_ids = [role.id for role in roles]
+
         if (
             not str(inter.author.id) in inter.component.custom_id
             and not inter.channel.permissions_for(inter.author).manage_messages
+            and not any(role.id in mod_role_ids for role in inter.author.roles)
         ):
             await inter.response.send_message(
                 "You are not the person that requested this message.", ephemeral=True
@@ -35,30 +41,32 @@ class Listeners(commands.Cog):
         await inter.delete_original_response()
 
     @commands.Cog.listener("on_button_click")
-    async def punch_in_out_click(self, interaction: disnake.MessageInteraction) -> None:
+    async def punch_in_out_click(self, inter: disnake.MessageInteraction) -> None:
         """A button click event listeners specifically listening for users that click on
         the punch in/out button"""
 
-        if interaction.component.custom_id != "punch":
+        if inter.component.custom_id != "punch":
             return
 
-        member = interaction.author
-        allowed = await self.punch_allowed(interaction.author)
+        allowed = await self.punch_allowed(inter.author)
 
         if not allowed:
-            return await interaction.response.send_message(
+            return await inter.response.send_message(
                 "You don't have a role that is allowed to punch in/out", ephemeral=True
             )
 
         timestamp = datetime.timestamp(disnake.utils.utcnow())
-        db_member = await query.add_member_punch_event(interaction.guild.id, member.id, timestamp)
+        member = await self.bot.member_cache.add_punch_event(
+            inter.guild.id, inter.author.id, timestamp
+        )
+        logger
 
-        embed = self.create_punch_embed(member, db_member, timestamp)
+        embed = self.create_punch_embed(inter.author, member, timestamp)
 
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await inter.response.send_message(embed=embed, ephemeral=True)
 
     def create_punch_embed(
-        self, member: disnake.Member, db_member: model.Member, timestamp: float
+        self, member: disnake.Member, db_member: Member, timestamp: float
     ) -> disnake.Embed:
         embed = disnake.Embed()
         embed.set_author(
@@ -73,7 +81,7 @@ class Listeners(commands.Cog):
         # member clocked out
         else:
             # get most recent clock in event time
-            event: model.Time = [time for time in db_member.times][-1]
+            event = [time for time in db_member.times][-1]
             embed.description = f"You clocked out at {disnake.utils.format_dt(timestamp, 't')} after clocking in {disnake.utils.format_dt(event.punch_in, 'R')}"
 
         return embed
@@ -81,7 +89,7 @@ class Listeners(commands.Cog):
     async def punch_allowed(self, member: disnake.Member) -> bool:
         """Check if the member is allowed to punch in or not"""
 
-        allowed_roles = await query.fetch_guild_roles(member.guild.id, can_punch=True)
+        allowed_roles = await self.bot.guild_cache.get_roles(member.guild.id, is_mod=True)
         if allowed_roles == []:
             return True
 
@@ -96,7 +104,8 @@ class Listeners(commands.Cog):
     async def handle_message_delete(
         self, payload: Union[disnake.RawBulkMessageDeleteEvent, disnake.RawMessageDeleteEvent]
     ) -> None:
-        """Handles deleting any configured embeds from the database it is deleted"""
+        """If any messages are deleted that contain the configured message ID for an embed,
+        the message, channel, and embeds that have been configured are removed."""
 
         if isinstance(payload, disnake.RawBulkMessageDeleteEvent):
             message_ids = payload.message_ids
@@ -104,14 +113,20 @@ class Listeners(commands.Cog):
         else:
             message_ids = [payload.message_id]
 
-        guild = await query.fetch_guild_config(payload.guild_id)
+        if payload.guild_id is None:
+            return
 
-        if not guild:
+        guild = await self.bot.guild_cache.get_guild(payload.guild_id)
+
+        if not guild or guild.message_id is None:
             return
 
         for message_id in message_ids:
             if message_id == guild.message_id:
-                await query.remove_config_message(guild.id, message_id)
+                logger.info(f"Config message `{message_id}` deleted in `{payload.guild_id}`")
+                await self.bot.guild_cache.update_guild(
+                    payload.guild_id, message_id=message_id, channel_id=None
+                )
                 break
 
 

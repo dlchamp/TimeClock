@@ -1,7 +1,5 @@
 import disnake
 
-__all__ = ("TrashButton",)
-
 
 class TrashButton(disnake.ui.Button):
     """Creates a Trash button to delete the message it's attached to"""

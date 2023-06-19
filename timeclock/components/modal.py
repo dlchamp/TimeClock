@@ -1,7 +1,5 @@
 import disnake
 
-__all__ = ("EditEmbed",)
-
 
 class EditEmbed(disnake.ui.Modal):
     """Modal for editing the embed body"""

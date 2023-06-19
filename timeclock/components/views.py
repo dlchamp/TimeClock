@@ -1,14 +1,9 @@
 import disnake
 
-from timeclock import query
+from timeclock.bot import TimeClockBot
 
 from .buttons import TrashButton
 from .modal import EditEmbed
-
-__all__ = (
-    "Pagination",
-    "EditEmbedButtons",
-)
 
 
 class Pagination(disnake.ui.View):
@@ -77,14 +72,23 @@ class Pagination(disnake.ui.View):
 class EditEmbedButtons(disnake.ui.View):
     message: disnake.Message
 
-    def __init__(self, message: int, embed: disnake.Embed, inter: disnake.GuildCommandInteraction):
+    def __init__(
+        self,
+        bot: TimeClockBot,
+        message: int,
+        embed: disnake.Embed,
+        inter: disnake.GuildCommandInteraction,
+    ):
         super().__init__(timeout=None)
+        self.bot = bot
         self.message = message
         self.embed = embed
         self.inter = inter
 
-    async def send_embed_and_update_config(self, inter, embed):
-        message = await inter.channel.send(
+    async def send_embed(
+        self, channel: disnake.TextChannel, embed: disnake.Embed
+    ) -> disnake.Message:
+        message = await channel.send(
             embed=embed,
             components=[
                 disnake.ui.Button(
@@ -94,12 +98,7 @@ class EditEmbedButtons(disnake.ui.View):
                 )
             ],
         )
-        await query.update_guild_config(
-            inter.guild.id,
-            embed=embed,
-            message_id=message.id,
-            channel_id=message.channel.id,
-        )
+
         return message
 
     @disnake.ui.button(label="Edit", style=disnake.ButtonStyle.primary)
@@ -126,9 +125,16 @@ class EditEmbedButtons(disnake.ui.View):
             try:
                 message = await self.message.edit(content=None, embed=embed)
             except disnake.NotFound:
-                message = await self.send_embed_and_update_config(inter, embed)
+                message = await self.send_embed(inter.channel, embed)
         else:
-            message = await self.send_embed_and_update_config(inter, embed)
+            message = await self.send_embed(inter.channel, embed)
+
+        await self.bot.guild_cache.update_guild(
+            inter.guild.id,
+            message_id=message.id,
+            channel_id=message.channel.id,
+            embed=embed.to_dict(),
+        )
 
         await inter.edit_original_response(
             f"Your customization has been saved. You may close this message.\n[Click here]({message.jump_url}) to view!",
