@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "timeclock"
-version = "0.2.0"
+version = "0.2.5"
 description = "A simple timeclock bot for Discord"
 authors = ["DLCHAMP <36091350+dlchamp@users.noreply.github.com>"]
 license = "MIT"
