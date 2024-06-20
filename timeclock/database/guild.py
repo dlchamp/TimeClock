@@ -17,9 +17,18 @@ class Guild(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     message_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     channel_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
-    embed: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    _embed: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     roles: Mapped[List[Role]] = relationship("Role", lazy="joined")
 
-    def get_embed(self) -> Optional[disnake.Embed]:
-        if self.embed:
-            return disnake.Embed.from_dict(json.loads(self.embed))
+    @property
+    def embed(self) -> disnake.Embed | None:
+        if self._embed is None:
+            return
+
+        embed_dict = json.loads(self._embed)
+        return disnake.Embed.from_dict(embed_dict)
+
+    @embed.setter
+    def embed(self, embed: disnake.Embed) -> None:
+        embed_dict = embed.to_dict()
+        self._embed = json.dumps(embed_dict)

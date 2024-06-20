@@ -86,7 +86,9 @@ class GuildCache:
         if guild is None:
             logger.info(f"{guild_id} not found in cache. Fetching from DB then caching")
             session = self.session()
-            async with session.begin_nested() if session.in_transaction() else session.begin() as trans:
+            async with (
+                session.begin_nested() if session.in_transaction() else session.begin()
+            ) as trans:
                 result = await session.execute(
                     select(Guild).where(Guild.id == guild_id).options(subqueryload(Guild.roles))
                 )
@@ -170,21 +172,20 @@ class GuildCache:
             guild = result.scalar_one_or_none()
 
             if not guild:
-                session.add(
-                    Guild(
-                        id=guild_id,
-                        message_id=None if message_id is MISSING else message_id,
-                        channel_id=None if channel_id is MISSING else channel_id,
-                        embed=None if embed is MISSING else embed,
-                    )
+                guild = Guild(
+                    id=guild_id,
+                    message_id=None if message_id is MISSING else message_id,
+                    channel_id=None if channel_id is MISSING else channel_id,
+                    embed=None if embed is MISSING else embed,
                 )
+                session.add(guild)
             else:
                 if message_id is not MISSING:
                     guild.message_id = message_id
                 if channel_id is not MISSING:
                     guild.channel_id = channel_id
                 if embed is not MISSING:
-                    guild.embed = json.dumps(embed)
+                    guild.embed = embed
 
             await session.flush()
             await session.refresh(guild)
