@@ -68,12 +68,13 @@ These commands are for general member use, however, some arguments are locked be
 1. Download this repo and extract to a location
 2. Open command and navigate inside of project directory
 3. Open the `.env.sample` file in a text editor and paste in your copied token, save, and rename the `.env-sample` to `.env`
-5. Create your virtual env `python -m venv venv` and then install the dependencies with `pip install -r requirements.txt`  
-    1. Activate your environment  
+4. Optionally create a virtual environment, instructions for python venv below, you may also use Poetry `poetry install`, then `poetry shell` to activate and be inside the venv.
+    1. Run `python -m venv venv`
+    2. Activate the virtual environment
         1. Windows - `venv\scripts\activate`   
         2. Linux/Mac - `source venv/bin/activate`
-6. If you wish to use poetry, simple run `poetry install` to create the environment with all dependencies installed.
-7. Run the bot with `python -m timeclock` or `poetry run python -m timeclock` if you used poetry 
+    3. Install your dependencies - `pip install -r requirements.txt`
+8. Run the bot with `python main.py`
 
 If the bot does not run, make sure that you're in the project's root folder and not inside the `timeclock` directory.  If you run `ls` (or `dir` - Windows) and do not see the `timeclock` directory, you should back out (`cd ../`) until you do see it, then run the bot again.
 
