@@ -63,7 +63,7 @@ class Listeners(commands.Cog):
 
         embed = self.create_punch_embed(inter.author, member, timestamp)
 
-        await inter.response.send_message(embed=embed, ephemeral=True)
+        await inter.response.send_message(embed=embed, ephemeral=True, delete_after=5)
 
     def create_punch_embed(
         self, member: disnake.Member, db_member: Member, timestamp: float
