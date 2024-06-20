@@ -23,7 +23,7 @@ class Admin(commands.Cog):
         req_perms = disnake.Permissions(
             send_messages=True, view_channel=True, read_message_history=True
         )
-        return inter.channel.permissions_for(inter.me) >= req_perms
+        return inter.app_permissions >= req_perms
 
     async def cog_slash_command_check(self, inter: disnake.GuildCommandInteraction) -> bool:
         """Performs a check for every command within this cog.  If returns True,
@@ -87,9 +87,13 @@ class Admin(commands.Cog):
             )
 
         guild = await self.bot.guild_cache.get_guild(inter.guild.id)
-        embed = (guild and guild.get_embed()) or constants.default_embed()
-        channel = inter.guild.get_channel(guild and guild.channel_id)
-        message = channel and channel.get_partial_message(guild.message_id)
+        if not guild:
+            embed = constants.default_embed()
+
+        else:
+            embed = guild.embed
+            channel = inter.guild.get_channel(guild.channel_id)
+            message = channel.get_partial_message(guild.message_id)
 
         if clear_images:
             embed.set_image(url=None)
