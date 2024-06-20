@@ -140,7 +140,7 @@ class EditEmbedButtons(disnake.ui.View):
             inter.guild.id,
             message_id=message.id,
             channel_id=message.channel.id,
-            embed=embed.to_dict(),
+            embed=embed,
         )
 
         await inter.edit_original_response(
