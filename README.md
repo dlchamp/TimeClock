@@ -76,5 +76,6 @@ These commands are for general member use, however, some arguments are locked be
     3. Install your dependencies - `pip install -r requirements.txt`
 8. Run the bot with `python main.py`
 
-If the bot does not run, make sure that you're in the project's root folder and not inside the `timeclock` directory.  If you run `ls` (or `dir` - Windows) and do not see the `timeclock` directory, you should back out (`cd ../`) until you do see it, then run the bot again.
+If at any time the above commands fail, make sure you are inside the project root directory.  If you run `ls` or `dir` you should be able to see the timeclock directory, main.py, and other files.
+If you do not see those files, cd into the correct directory before going through the above steps again.
 
