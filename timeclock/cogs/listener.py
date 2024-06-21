@@ -86,7 +86,10 @@ class Listeners(commands.Cog):
     async def punch_allowed(self, member: disnake.Member) -> bool:
         """Check if the member is allowed to punch in or not"""
         allowed_roles = await self.bot.get_guild_roles(member.guild.id, is_mod=True)
-        return any(role in allowed_roles for role in member.roles)
+        return (
+            any(role in allowed_roles for role in member.roles)
+            or member.guild_permissions.administrator
+        )
 
     @commands.Cog.listener("on_raw_message_delete")
     @commands.Cog.listener("on_raw_bulk_message_delete")

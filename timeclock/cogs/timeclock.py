@@ -22,7 +22,7 @@ class TimeClock(commands.Cog):
 
         return (
             any(role in mod_roles for role in inter.author.roles)
-            or inter.author.permissions >= permissions
+            or inter.author.guild_permissions >= permissions
         )
 
     def calculate_time_totals(self, seconds: float) -> str:
@@ -98,7 +98,7 @@ class TimeClock(commands.Cog):
     async def timesheet(
         self,
         inter: disnake.GuildCommandInteraction,
-        history: int = commands.Param(ge=1, le=31, default=7),
+        history: int = commands.Param(7, ge=1, le=31),
         all_members: Optional[bool] = False,
         member: Optional[disnake.Member] = None,
     ) -> None:
