@@ -6,7 +6,7 @@ from disnake.ext import commands
 
 from timeclock import log
 from timeclock.bot import TimeClockBot
-from timeclock.database import Guild, Member
+from timeclock.database import Member
 
 logger = log.get_logger(__name__)
 
@@ -24,13 +24,12 @@ class Listeners(commands.Cog):
         if not "trash" in inter.component.custom_id:
             return
 
-        roles = await self.bot.guild_cache.get_roles(inter.guild.id, is_mod=True)
-        mod_role_ids = [role.id for role in roles]
+        mod_roles = await self.bot.get_guild_roles(inter.guild.id, is_mod=True)
 
         if (
             not str(inter.author.id) in inter.component.custom_id
             and not inter.channel.permissions_for(inter.author).manage_messages
-            and not any(role.id in mod_role_ids for role in inter.author.roles)
+            and not any(role in mod_roles for role in inter.author.roles)
         ):
             await inter.response.send_message(
                 "You are not the person that requested this message.", ephemeral=True
@@ -56,9 +55,7 @@ class Listeners(commands.Cog):
             )
 
         timestamp = datetime.timestamp(disnake.utils.utcnow())
-        member = await self.bot.member_cache.add_punch_event(
-            inter.guild.id, inter.author.id, timestamp
-        )
+        member = await self.bot.add_punch(inter.guild.id, inter.author.id, timestamp)
         logger
 
         embed = self.create_punch_embed(inter.author, member, timestamp)
@@ -88,16 +85,8 @@ class Listeners(commands.Cog):
 
     async def punch_allowed(self, member: disnake.Member) -> bool:
         """Check if the member is allowed to punch in or not"""
-
-        allowed_roles = await self.bot.guild_cache.get_roles(member.guild.id, is_mod=True)
-        if allowed_roles == []:
-            return True
-
-        allowed_role_ids = [role.id for role in allowed_roles]
-        if any(role.id in allowed_role_ids for role in member.roles):
-            return True
-
-        return False
+        allowed_roles = await self.bot.get_guild_roles(member.guild.id, is_mod=True)
+        return any(role in allowed_roles for role in member.roles)
 
     @commands.Cog.listener("on_raw_message_delete")
     @commands.Cog.listener("on_raw_bulk_message_delete")
@@ -116,7 +105,7 @@ class Listeners(commands.Cog):
         if payload.guild_id is None:
             return
 
-        guild = await self.bot.guild_cache.get_guild(payload.guild_id)
+        guild = await self.bot.ensure_guild(payload.guild_id)
 
         if not guild or guild.message_id is None:
             return

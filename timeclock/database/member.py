@@ -1,5 +1,4 @@
 import datetime
-from typing import List
 
 import disnake
 from sqlalchemy import BigInteger, Boolean, Column
@@ -30,7 +29,7 @@ class Member(Base):
     id: Mapped[int] = Column(BigInteger, primary_key=True)
     guild_id: Mapped[int] = Column(BigInteger, nullable=False)
     on_duty: Mapped[bool] = Column(Boolean, nullable=False, default=False)
-    times: Mapped[List[Time]] = relationship("Time", lazy="joined")
+    times: Mapped[list[Time]] = relationship("Time", lazy="subquery")
 
     @property
     def status(self) -> str:
@@ -43,7 +42,7 @@ class Member(Base):
         """
         return "🟢 - On Duty" if self.on_duty else "🔴 - Off Duty"
 
-    def limit_history(self, limit: int = 7) -> List[Time]:
+    def limit_history(self, limit: int = 7) -> list[Time]:
         """Return a list of Time instances from the last {limit} days.
 
         Parameters

@@ -136,7 +136,7 @@ class EditEmbedButtons(disnake.ui.View):
         else:
             message = await self.send_embed(inter.channel, embed)
 
-        await self.bot.guild_cache.update_guild(
+        await self.bot.ensure_guild(
             inter.guild.id,
             message_id=message.id,
             channel_id=message.channel.id,

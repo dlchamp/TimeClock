@@ -28,12 +28,11 @@ class Admin(commands.Cog):
     async def cog_slash_command_check(self, inter: disnake.GuildCommandInteraction) -> bool:
         """Performs a check for every command within this cog.  If returns True,
         command is invoked, else command.CheckFailed is raise"""
-        roles = await self.bot.guild_cache.get_roles(inter.guild.id, is_mod=True)
-        role_ids = [role.id for role in roles]
+        roles = inter.author.roles
+        mod_roles = await self.bot.get_guild_roles(inter.guild.id, is_mod=True)
 
         return (
-            any(role.id in role_ids for role in inter.author.roles)
-            or inter.author.guild_permissions.administrator
+            any(role in mod_roles for role in roles) or inter.author.guild_permissions.administrator
         )
 
     async def cog_slash_command_error(
@@ -86,14 +85,14 @@ class Admin(commands.Cog):
                 ephemeral=True,
             )
 
-        guild = await self.bot.guild_cache.get_guild(inter.guild.id)
-        if not guild:
-            embed = constants.default_embed()
+        guild = await self.bot.ensure_guild(inter.guild.id)
+        embed = guild.embed if guild and guild.embed else constants.default_embed()
 
-        else:
-            embed = guild.embed
+        if guild and guild.channel_id:
             channel = inter.guild.get_channel(guild.channel_id)
             message = channel.get_partial_message(guild.message_id)
+        else:
+            channel = message = None
 
         if clear_images:
             embed.set_image(url=None)
@@ -119,7 +118,7 @@ class Admin(commands.Cog):
         """View roles and permissions you have configured to use with the bot"""
         await inter.response.defer()
 
-        roles = await self.bot.guild_cache.get_roles(inter.guild.id)
+        roles = await self.bot.get_guild_roles(inter.guild.id)
         if roles:
             description = "\n".join(
                 f"{inter.guild.get_role(role.id).mention} | Is Mod: {role.is_mod} | Can Punch: {role.can_punch}"
@@ -157,12 +156,13 @@ class Admin(commands.Cog):
             return await inter.response.send_message(
                 "only server admins can add, update, or remove mod roles", ephemeral=True
             )
-        await self.bot.guild_cache.add_role(
-            inter.guild.id, role_id=role.id, can_punch=can_punch, is_mod=is_mod
+
+        db_role = await self.bot.add_role(
+            role.id, inter.guild.id, can_punch=can_punch, is_mod=is_mod
         )
         await inter.response.send_message(
             f"{role.mention} has been configured with the following permissions:\n"
-            f"Mod: **{is_mod}**\nCan Punch: **{can_punch}**",
+            f"Mod: **{db_role.is_mod}**\nCan Punch: **{db_role.can_punch}**",
             ephemeral=True,
         )
 
@@ -193,7 +193,7 @@ class Admin(commands.Cog):
             return await inter.response.send_message(f"`{role}` is not valid", ephemeral=True)
 
         try:
-            await self.bot.guild_cache.remove_role(inter.guild.id, role)
+            await self.bot.delete_role(role)
         except ValueError as e:
             await inter.response.send_message(e, ephemeral=True)
             return
@@ -212,7 +212,7 @@ class Admin(commands.Cog):
         string: :type:`str`
             The argument string as provided from discord via user input
         """
-        roles = await self.bot.guild_cache.get_roles(inter.guild.id)
+        roles = await self.bot.get_guild_roles(inter.guild.id)
         if not roles:
             return ["No roles have been configured"]
 

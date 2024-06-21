@@ -17,19 +17,13 @@ class TimeClock(commands.Cog):
     async def check_member_permissions(self, inter: disnake.GuildCommandInteraction) -> bool:
         """Checks if the member contains any of the mod_roles or has the administrator permissions
         for the guild"""
+        mod_roles = await self.bot.get_guild_roles(inter.guild.id, is_mod=True)
+        permissions = disnake.Permissions(manage_roles=True)
 
-        member = inter.author
-        if member.guild_permissions.administrator or member.guild_permissions.manage_roles:
-            return True
-
-        mod_roles = await self.bot.guild_cache.get_mod_roles(inter.guild.id, mod_only=True)
-
-        if not mod_roles:
-            return False
-
-        mod_role_ids = [role.id for role in mod_roles]
-
-        return any(role.id in mod_role_ids for role in member.roles)
+        return (
+            any(role in mod_roles for role in inter.author.roles)
+            or inter.author.permissions >= permissions
+        )
 
     def calculate_time_totals(self, seconds: float) -> str:
         """
@@ -139,7 +133,7 @@ class TimeClock(commands.Cog):
                 )
 
             if all_members:
-                all_members = await self.bot.member_cache.get_members(inter.guild.id)
+                all_members = await self.bot.get_members(inter.guild.id)
 
                 if not all_members:
                     await inter.delete_original_response()
@@ -160,7 +154,7 @@ class TimeClock(commands.Cog):
                 return
 
         member = member or inter.author
-        tc_member = await self.bot.member_cache.get_member(member.id)
+        tc_member = await self.bot.get_members(inter.guild.id, member_id=member.id)
 
         if not tc_member:
             await inter.delete_original_response()
