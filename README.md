@@ -42,7 +42,7 @@ These commands are for general member use, however, some arguments are locked be
 
 ### Dependencies
 
-* Built on [Python3 - 3.10+](https://www.python.org/downloads/)
+* Built on [Python3 - 3.11+](https://www.python.org/downloads/)
 * Install dependencies with poetry (`poetry install`) otherwise use `pip install -r requirements.txt` 
 
 ### Getting Started
